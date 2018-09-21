@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Qdabra.Utility.SharePointPerfMon.RequestResults
 {
@@ -17,9 +18,19 @@ namespace Qdabra.Utility.SharePointPerfMon.RequestResults
 
         protected abstract IEnumerable<string> CsvValues();
 
+        private static readonly Regex RemovalChars = new Regex(@"\r\n|\s|,");
+
+        private static string Sanitize(string value) => RemovalChars.Replace(value, " ");
+
         internal string ToCsv()
         {
-            var sharedValues = new[] { Url, Start.ToString("s"), End.ToString("s"), TotalSeconds.ToString(), Message };
+            var sharedValues = new [] {
+                Url,
+                Start.ToString("s"),
+                End.ToString("s"),
+                TotalSeconds.ToString(),
+                Sanitize(Message),
+            };
             var values = sharedValues.Concat(CsvValues()).ToList();
 
             var padded = values.Concat(Enumerable.Repeat("", CsvColumnCount - values.Count));
